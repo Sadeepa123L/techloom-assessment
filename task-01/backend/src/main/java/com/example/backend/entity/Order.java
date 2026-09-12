@@ -29,7 +29,6 @@ public class Order {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    // 5-minute stock lock eka check karanna
     private LocalDateTime expiresAt;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
