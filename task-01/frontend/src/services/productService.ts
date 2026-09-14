@@ -2,7 +2,7 @@ import { fetchApi } from './api';
 import type { Product } from '../components/ProductCard';
 
 export const productService = {
-  getAll: () => fetchApi<Product[]>('/products'),
+  getAll: () => fetchApi<Product[]>('/api/products'),
   getById: (id: number) => fetchApi<Product>(`/api/products/${id}`),
   create: (data: Omit<Product, 'id'>) => fetchApi<Product>('/products', {
     method: 'POST',
