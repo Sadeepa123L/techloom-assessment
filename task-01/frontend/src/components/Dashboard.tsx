@@ -43,6 +43,7 @@ export default function Dashboard() {
   };
 
   const handleDeleteProduct = async (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this item?")) return;
     try {
       await productService.delete(id);
       await loadProducts(); // Refresh list from DB
