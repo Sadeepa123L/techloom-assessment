@@ -12,15 +12,15 @@ export interface OrderResponse {
 }
 
 export const orderService = {
-  createOrder: (items: OrderItemRequest[]) => fetchApi<OrderResponse>('/orders', {
+  createOrder: (items: OrderItemRequest[]) => fetchApi<OrderResponse>('/api/orders', {
     method: 'POST',
     body: JSON.stringify({ items }),
   }),
-  processPayment: (orderId: number, paymentStatus: 'SUCCESS' | 'FAILED' | 'TIMEOUT') => fetchApi<string>('/orders/payment', {
+  processPayment: (orderId: number, paymentStatus: 'SUCCESS' | 'FAILED' | 'TIMEOUT') => fetchApi<string>('/api/orders/payment', {
     method: 'POST',
     body: JSON.stringify({ orderId, paymentStatus }),
   }),
-  cancelOrder: (orderId: number) => fetchApi<string>(`/orders/${orderId}/cancel`, {
+  cancelOrder: (orderId: number) => fetchApi<string>(`/api/orders/${orderId}/cancel`, {
     method: 'POST',
   }),
 };
