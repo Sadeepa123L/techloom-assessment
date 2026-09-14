@@ -12,6 +12,7 @@ export interface OrderResponse {
 }
 
 export const orderService = {
+  getAllOrders: () => fetchApi<OrderResponse[]>('/api/orders'),
   createOrder: (items: OrderItemRequest[]) => fetchApi<OrderResponse>('/api/orders', {
     method: 'POST',
     body: JSON.stringify({ items }),

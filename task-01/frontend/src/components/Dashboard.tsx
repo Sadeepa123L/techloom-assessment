@@ -5,6 +5,8 @@ import { ProductPage } from './ProductPage';
 import { productService } from '../services/productService';
 import type { Product } from './ProductCard';
 
+import { OrdersPage } from './OrdersPage';
+
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('POS');
   const [products, setProducts] = useState<Product[]>([]);
@@ -59,6 +61,7 @@ export default function Dashboard() {
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         {activeTab === 'POS' && <POSPage products={products} onUpdateProductStock={handleUpdateProductStock} reloadProducts={loadProducts} />}
         {activeTab === 'PRODUCTS' && <ProductPage products={products} onSave={handleSaveProduct} onDelete={handleDeleteProduct} />}
+        {activeTab === 'ORDERS' && <OrdersPage />}
       </div>
     </div>
   );

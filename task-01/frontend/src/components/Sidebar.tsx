@@ -15,6 +15,12 @@ export function Sidebar({ activeTab, setActiveTab }: { activeTab: string, setAct
         >
           📦 Manage Products
         </button>
+        <button 
+          className={`sidebar-btn ${activeTab === 'ORDERS' ? 'active' : ''}`} 
+          onClick={() => setActiveTab('ORDERS')}
+        >
+          📋 Orders
+        </button>
       </nav>
     </div>
   );

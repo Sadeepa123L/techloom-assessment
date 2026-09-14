@@ -22,6 +22,11 @@ public class OrderController {
         return new ResponseEntity<>(orderService.createOrder(requestDTO), HttpStatus.CREATED);
     }
 
+    @GetMapping
+    public ResponseEntity<java.util.List<OrderResposeDTO>> getAllOrders() {
+        return ResponseEntity.ok(orderService.getAllOrders());
+    }
+
     @PostMapping("/payment")
     public ResponseEntity<String> processPayment(@Valid @RequestBody PaymentRequestDTO paymentRequestDTO) {
         orderService.processPayment(paymentRequestDTO);

@@ -9,4 +9,5 @@ public interface OrderService {
     void processPayment(PaymentRequestDTO paymentRequestDTO);
     void releaseExpiredReservations();
     void cancelOrder(Long orderId);
+    java.util.List<OrderResposeDTO> getAllOrders();
 }

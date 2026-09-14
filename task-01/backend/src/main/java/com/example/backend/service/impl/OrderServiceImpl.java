@@ -145,4 +145,15 @@ public class OrderServiceImpl implements OrderService {
         }
         orderRepo.save(order);
     }
+
+    @Override
+    public List<OrderResposeDTO> getAllOrders() {
+        return orderRepo.findAll().stream().map(order -> OrderResposeDTO.builder()
+                .orderId(order.getId())
+                .status(order.getStatus())
+                .totalAmount(order.getTotalAmount())
+                .createdAt(order.getCreatedAt())
+                .expiresAt(order.getExpiresAt())
+                .build()).toList();
+    }
 }
