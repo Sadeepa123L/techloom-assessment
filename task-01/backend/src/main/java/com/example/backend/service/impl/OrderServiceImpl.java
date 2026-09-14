@@ -93,9 +93,16 @@ public class OrderServiceImpl implements OrderService {
                 product.setReservedStock(product.getReservedStock() - item.getQuantity());
                 productRepo.save(product);
             }
-        } else if ("FAILED".equalsIgnoreCase(paymentRequestDTO.getPaymentStatus()) || 
-                   "TIMEOUT".equalsIgnoreCase(paymentRequestDTO.getPaymentStatus())) {
+        } else if ("FAILED".equalsIgnoreCase(paymentRequestDTO.getPaymentStatus())) {
             order.setStatus(OrderStatus.FAILED);
+            for (OrderItem item : order.getItems()) {
+                Product product = item.getProduct();
+                product.setReservedStock(product.getReservedStock() - item.getQuantity());
+                product.setAvailableStock(product.getAvailableStock() + item.getQuantity());
+                productRepo.save(product);
+            }
+        } else if ("TIMEOUT".equalsIgnoreCase(paymentRequestDTO.getPaymentStatus())) {
+            order.setStatus(OrderStatus.EXPIRED);
             for (OrderItem item : order.getItems()) {
                 Product product = item.getProduct();
                 product.setReservedStock(product.getReservedStock() - item.getQuantity());
