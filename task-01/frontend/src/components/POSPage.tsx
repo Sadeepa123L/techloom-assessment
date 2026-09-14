@@ -33,7 +33,7 @@ export function POSPage({ products, onUpdateProductStock, reloadProducts }: { pr
     try {
       const items = cart.map(item => ({ productId: item.id, quantity: item.quantity }));
       const order = await orderService.createOrder(items);
-      setActiveOrderId(order.id);
+      setActiveOrderId(order.orderId);
       setShowPayment(true);
     } catch (error: any) {
       alert(`Checkout failed: ${error.message}`);

@@ -6,7 +6,7 @@ export interface OrderItemRequest {
 }
 
 export interface OrderResponse {
-  id: number;
+  orderId: number;
   status: string;
   totalAmount: number;
 }
