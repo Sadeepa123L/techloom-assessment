@@ -6,7 +6,7 @@ async function getProducts(search?: string, category?: string) {
   if (search) params.append("search", search);
   if (category) params.append("category", category);
   
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}"}/api/products?${params.toString()}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/products?${params.toString()}`, {
     cache: "no-store", // We want fresh data for e-commerce
   });
   

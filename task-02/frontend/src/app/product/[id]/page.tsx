@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { AddToCartButton } from "./AddToCartButton";
 
 async function getProduct(id: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/products/${id}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/products/${id}`, {
     cache: "no-store",
   });
 

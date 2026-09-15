@@ -11,7 +11,7 @@ export default function OrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch("${process.env.NEXT_PUBLIC_API_URL || "${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}"}/api/orders/my-orders");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/orders/my-orders`);
       if (!res.ok) {
         if (res.status === 404) {
           // Backend missing fallback
@@ -39,7 +39,7 @@ export default function OrdersPage() {
     if (!confirm("Are you sure you want to cancel this order?")) return;
     
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}"}/api/orders/${orderId}/cancel`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/orders/${orderId}/cancel`, {
         method: "POST"
       });
       
