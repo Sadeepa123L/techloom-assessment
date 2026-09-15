@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
+import cron from 'node-cron';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -83,6 +84,14 @@ app.post('/api/orders/checkout', async (req, res) => {
 
     // Create the order and update stock
     const order = await prisma.$transaction(async (tx) => {
+      // First, verify stock for all items
+      for (const item of orderItemsToCreate) {
+        const product = await tx.product.findUnique({ where: { id: item.productId } });
+        if (!product || product.availableStock < item.quantity) {
+          throw new Error(`Insufficient stock for product ${item.productId}`);
+        }
+      }
+
       const newOrder = await tx.order.create({
         data: {
           total,
@@ -96,7 +105,10 @@ app.post('/api/orders/checkout', async (req, res) => {
       for (const item of orderItemsToCreate) {
         await tx.product.update({
           where: { id: item.productId },
-          data: { stock: { decrement: item.quantity } }
+          data: { 
+            availableStock: { decrement: item.quantity },
+            reservedStock: { increment: item.quantity }
+          }
         });
       }
 
@@ -104,8 +116,11 @@ app.post('/api/orders/checkout', async (req, res) => {
     });
 
     res.json({ id: order.id, total: order.total });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
+    if (error.message && error.message.includes('Insufficient stock')) {
+      return res.status(400).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Failed to process checkout' });
   }
 });
@@ -120,21 +135,51 @@ app.post('/api/payments/process', async (req, res) => {
     }
 
     const order = await prisma.order.findUnique({
-      where: { id: orderId }
+      where: { id: orderId },
+      include: { items: true }
     });
 
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    const newStatus = status === 'SUCCESS' ? 'PAID' : 'FAILED';
+    if (order.status !== 'PENDING') {
+      return res.status(400).json({ error: 'Order already processed' });
+    }
 
-    await prisma.order.update({
-      where: { id: orderId },
-      data: { status: newStatus }
+    await prisma.$transaction(async (tx) => {
+      const newStatus = status === 'SUCCESS' ? 'PAID' : 'FAILED';
+      await tx.order.update({
+        where: { id: orderId },
+        data: { status: newStatus }
+      });
+
+      if (status !== 'SUCCESS') {
+        // Revert reserved stock back to available
+        for (const item of order.items) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              availableStock: { increment: item.quantity },
+              reservedStock: { decrement: item.quantity }
+            }
+          });
+        }
+      } else {
+        // Paid: permanently deduct reserved stock
+        for (const item of order.items) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              reservedStock: { decrement: item.quantity }
+            }
+          });
+        }
+      }
     });
 
-    res.json({ success: true, status: newStatus });
+    const finalStatus = status === 'SUCCESS' ? 'PAID' : 'FAILED';
+    res.json({ success: true, status: finalStatus });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to process payment' });
@@ -176,26 +221,85 @@ app.post('/api/orders/:id/cancel', async (req, res) => {
     const { id } = req.params;
     
     const order = await prisma.order.findUnique({
-      where: { id }
+      where: { id },
+      include: { items: true }
     });
 
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    if (order.status === 'CANCELLED') {
-      return res.status(400).json({ error: 'Order is already cancelled' });
+    if (order.status === 'CANCELLED' || order.status === 'EXPIRED') {
+      return res.status(400).json({ error: `Order is already ${order.status.toLowerCase()}` });
     }
 
-    await prisma.order.update({
-      where: { id },
-      data: { status: 'CANCELLED' }
+    await prisma.$transaction(async (tx) => {
+      await tx.order.update({
+        where: { id },
+        data: { status: 'CANCELLED' }
+      });
+
+      for (const item of order.items) {
+        if (order.status === 'PENDING') {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              availableStock: { increment: item.quantity },
+              reservedStock: { decrement: item.quantity }
+            }
+          });
+        } else if (order.status === 'PAID') {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              availableStock: { increment: item.quantity }
+            }
+          });
+        }
+      }
     });
 
     res.json({ success: true });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to cancel order' });
+  }
+});
+
+cron.schedule('* * * * *', async () => {
+  try {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const expiredOrders = await prisma.order.findMany({
+      where: {
+        status: 'PENDING',
+        createdAt: {
+          lt: fiveMinutesAgo
+        }
+      },
+      include: { items: true }
+    });
+
+    for (const order of expiredOrders) {
+      await prisma.$transaction(async (tx) => {
+        await tx.order.update({
+          where: { id: order.id },
+          data: { status: 'EXPIRED' }
+        });
+        
+        for (const item of order.items) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              availableStock: { increment: item.quantity },
+              reservedStock: { decrement: item.quantity }
+            }
+          });
+        }
+      });
+      console.log(`Order ${order.id} expired and stock reverted.`);
+    }
+  } catch (err) {
+    console.error('Error in expiry cron job:', err);
   }
 });
 
