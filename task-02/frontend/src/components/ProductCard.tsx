@@ -15,7 +15,7 @@ export function ProductCard({ product }: { product: Product }) {
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
-        {product.stock <= 0 && (
+        {product.availableStock <= 0 && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-sm dark:bg-black/60">
             <span className="rounded-full bg-zinc-900 px-3 py-1 text-sm font-medium text-white dark:bg-white dark:text-zinc-900">
               Out of Stock
