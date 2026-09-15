@@ -19,7 +19,7 @@ export function PaymentModal({ orderId, amount, onComplete, onClose }: PaymentMo
     setMessage("Contacting payment gateway...");
 
     try {
-      const response = await fetch("http://localhost:5000/api/payments/process", {
+      const response = await fetch("${process.env.NEXT_PUBLIC_API_URL || "${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}"}/api/payments/process", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
