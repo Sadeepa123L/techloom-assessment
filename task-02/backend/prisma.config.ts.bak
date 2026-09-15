@@ -1,0 +1,7 @@
+const { definePrismaConfig } = require("prisma/config");
+
+module.exports = definePrismaConfig({
+  skills: {
+    agents: ["claude", "cursor", "agents", "devin"],
+  },
+});
