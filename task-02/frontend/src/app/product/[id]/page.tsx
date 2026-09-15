@@ -74,9 +74,9 @@ export default async function ProductPage({
           </div>
 
           <div className="mt-6 flex items-center gap-2">
-            <div className={`h-2.5 w-2.5 rounded-full ${product.stock > 0 ? "bg-green-500" : "bg-red-500"}`} />
+            <div className={`h-2.5 w-2.5 rounded-full ${product.availableStock > 0 ? "bg-green-500" : "bg-red-500"}`} />
             <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-              {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+              {product.availableStock > 0 ? `${product.availableStock} in stock` : "Out of stock"}
             </span>
           </div>
 
