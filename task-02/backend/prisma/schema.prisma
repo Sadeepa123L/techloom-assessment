@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  stock       Int      @default(0)
+  images      Json     // Array of image URLs stored as JSON
+  category    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id        String   @id @default(uuid())
+  status    String   @default("PENDING") // PENDING, RESERVED, COMPLETED, CANCELLED
+  total     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items     OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  quantity  Int
+  price     Float // price at the time of order
+
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+}
