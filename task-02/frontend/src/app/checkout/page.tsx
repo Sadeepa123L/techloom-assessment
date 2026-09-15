@@ -1,7 +1,7 @@
 "use client";
 
 import { useCartStore } from "@/store/useCartStore";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { PaymentModal } from "@/components/PaymentModal";
 
@@ -14,8 +14,13 @@ export default function CheckoutPage() {
   const [showPayment, setShowPayment] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    if (items.length === 0 && !showPayment) {
+      router.push("/cart");
+    }
+  }, [items.length, showPayment, router]);
+
   if (items.length === 0 && !showPayment) {
-    router.push("/cart");
     return null;
   }
 
